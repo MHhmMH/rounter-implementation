@@ -74,12 +74,14 @@
 #define SR_ARPCACHE_SZ    100  
 #define SR_ARPCACHE_TO    15.0
 
+// This is a framelist with next pointer
 struct sr_packet {
     uint8_t *buf;               /* A raw Ethernet frame, presumably with the dest MAC empty */
     unsigned int len;           /* Length of raw Ethernet frame */
     char *iface;                /* The outgoing interface */
     struct sr_packet *next;
 };
+
 
 struct sr_arpentry {
     unsigned char mac[6]; 
