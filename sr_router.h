@@ -71,8 +71,9 @@ void sr_handlearp(struct sr_instance* sr, uint8_t * packet, unsigned int len, ch
 void sr_handlearp(struct sr_instance* sr, uint8_t * packet, unsigned int len, char* interface);
 void sr_handlearprequest(struct sr_instance* sr,sr_ethernet_hdr_t *source_ether,sr_arp_hdr_t * source_acp, struct sr_if * current_interface);
 void sr_handlearpreply(struct sr_instance* sr,sr_arp_hdr_t * source_acp, struct sr_if * current_interface);
-
-
+void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * interface);
+void sr_handleicmperror(struct sr_instance *sr, uint8_t* source_packet, uint8_t icmp_type, uint8_t icmp_code, struct sr_if* current_interface);
+void sr_forward_ip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * interface);
 /* -- sr_if.c -- */
 void sr_add_interface(struct sr_instance* , const char* );
 void sr_set_ether_ip(struct sr_instance* , uint32_t );

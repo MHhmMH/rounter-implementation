@@ -10,28 +10,106 @@
 #include "sr_router.h"
 #include "sr_if.h"
 #include "sr_protocol.h"
+#include "sr_rt.h"
 
 /* 
   This function gets called every second. For each request sent out, we keep
   checking whether we should resend an request or destroy the arp request.
   See the comments in the header file for an idea of what it should look like.
 */
-void sr_arpcache_sweepreqs(struct sr_instance *sr) {
-    /* Fill this in */
 
+
+#define BROADCAST_ADDRESS  "\xff\xff\xff\xff\xff\xff"
+
+void sr_handle_arpreq(struct sr_instance* sr, struct sr_arpreq* request)
+{
+    time_t currenttime = time(NULL);
+    pthread_mutex_lock(&sr->cache.lock);
+    if (difftime(currenttime,request->sent) > 1.0)
+    {
+        if (request->times_sent >= 5)
+        {
+            struct sr_packet * current_packet = request->packets;
+            while(current_packet)
+            {
+                struct sr_if * current_interface = sr_get_interface(sr,current_packet->iface);
+                sr_handleicmperror(sr,current_packet->buf,0x03,0x01,current_interface);
+                current_packet = current_packet->next;
+            }
+            sr_arpreq_destroy(&sr->cache,request);
+        }
+        else
+        {
+            unsigned int packet_len = sizeof(sr_arp_hdr_t) + sizeof(sr_ethernet_hdr_t);
+            uint8_t * reply_packet = malloc(packet_len);
+            sr_ethernet_hdr_t* reply_ether = (sr_ethernet_hdr_t *) reply_packet;
+            sr_arp_hdr_t* reply_arp = (sr_arp_hdr_t *)(reply_packet + sizeof(sr_ethernet_hdr_t));
+            // LPM
+            struct sr_if *reply_interface;
+            struct sr_rt *current_router = sr->routing_table;
+            while (current_router)
+            {
+
+                uint32_t dist_ip = current_router->mask.s_addr & request->ip;
+                if (dist_ip == current_router->dest.s_addr)
+                {
+                    reply_interface = sr_get_interface(sr,current_router->interface);
+                }
+                current_router = current_router->next;
+            }
+            reply_ether->ether_type = ethertype_arp;
+
+            // boardcast the arp request
+            memcpy(reply_ether->ether_shost,reply_interface->addr,ETHER_ADDR_LEN);
+            memcpy(reply_ether->ether_dhost,(uint8_t *)BROADCAST_ADDRESS,ETHER_ADDR_LEN);
+
+            // create the arp header
+
+            reply_arp->ar_hrd = arp_hrd_ethernet;
+            reply_arp->ar_pro = ethertype_ip;
+            reply_arp->ar_hln = ETHER_ADDR_LEN;
+            reply_arp->ar_pln = 4;
+            reply_arp->ar_op = arp_op_request;
+            reply_arp->ar_sip = reply_interface->ip;
+            reply_arp->ar_tip = request->ip;
+
+            memcpy(reply_arp->ar_sha,reply_interface->addr,ETHER_ADDR_LEN);
+            memcpy(reply_arp->ar_tha,(unsigned char*)BROADCAST_ADDRESS,ETHER_ADDR_LEN);
+
+            sr_send_packet(sr,reply_packet,packet_len,reply_interface->name);
+
+            request->times_sent +=1;
+            request->sent = time(NULL);
+        }
+    }
+    pthread_mutex_unlock(&sr->cache.lock);
+}
+
+void sr_arpcache_sweepreqs(struct sr_instance *sr)
+{
+    /* Fill this in */
+    struct sr_arpreq* request_list = sr->cache.requests;
+    while(request_list)
+    {
+        struct sr_arpreq* nextrequest = request_list->next;
+        sr_handle_arpreq(sr,request_list);
+        request_list = nextrequest;
+    }
 }
 
 /* You should not need to touch the rest of this code. */
 
 /* Checks if an IP->MAC mapping is in the cache. IP is in network byte order.
    You must free the returned structure if it is not NULL. */
-struct sr_arpentry *sr_arpcache_lookup(struct sr_arpcache *cache, uint32_t ip) {
+struct sr_arpentry *sr_arpcache_lookup(struct sr_arpcache *cache, uint32_t ip)
+{
     pthread_mutex_lock(&(cache->lock));
     
     struct sr_arpentry *entry = NULL, *copy = NULL;
     
     int i;
-    for (i = 0; i < SR_ARPCACHE_SZ; i++) {
+    for (i = 0; i < SR_ARPCACHE_SZ; i++)
+    {
         if ((cache->entries[i].valid) && (cache->entries[i].ip == ip)) {
             entry = &(cache->entries[i]);
         }
@@ -64,7 +142,8 @@ struct sr_arpreq *sr_arpcache_queuereq(struct sr_arpcache *cache,
     pthread_mutex_lock(&(cache->lock));
     
     struct sr_arpreq *req;
-    for (req = cache->requests; req != NULL; req = req->next) {
+    for (req = cache->requests; req != NULL; req = req->next)
+    {
         if (req->ip == ip) {
             break;
         }
@@ -143,12 +222,14 @@ struct sr_arpreq *sr_arpcache_insert(struct sr_arpcache *cache,
 
 /* Frees all memory associated with this arp request entry. If this arp request
    entry is on the arp request queue, it is removed from the queue. */
-void sr_arpreq_destroy(struct sr_arpcache *cache, struct sr_arpreq *entry) {
+void sr_arpreq_destroy(struct sr_arpcache *cache, struct sr_arpreq *entry)
+{
     pthread_mutex_lock(&(cache->lock));
     
     if (entry) {
         struct sr_arpreq *req, *prev = NULL, *next = NULL; 
-        for (req = cache->requests; req != NULL; req = req->next) {
+        for (req = cache->requests; req != NULL; req = req->next)
+        {
             if (req == entry) {                
                 if (prev) {
                     next = req->next;
@@ -214,7 +295,8 @@ int sr_arpcache_init(struct sr_arpcache *cache) {
 }
 
 /* Destroys table + table lock. Returns 0 on success. */
-int sr_arpcache_destroy(struct sr_arpcache *cache) {
+int sr_arpcache_destroy(struct sr_arpcache *cache)
+{
     return pthread_mutex_destroy(&(cache->lock)) && pthread_mutexattr_destroy(&(cache->attr));
 }
 
