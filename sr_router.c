@@ -301,7 +301,7 @@ void sr_handleicmperror(struct sr_instance *sr, uint8_t* source_packet, uint8_t 
     // send the packet
     sr_send_packet(sr,reply_packet,packet_len,reply_interface->name);
 }
-void sr_forward_ip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * interface)
+void sr_forward_ip(struct sr_instance* sr,uint8_t * packet, unsigned len,struct sr_if * current_interface)
 {
     sr_ethernet_hdr_t* ether_header = (sr_ethernet_hdr_t *) packet;
     sr_ip_hdr_t * ip_header = (sr_ip_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
@@ -338,9 +338,14 @@ void sr_forward_ip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * 
         else
         {
             struct sr_arpreq* request = sr_arpcache_queuereq(&sr->cache,ip_header->ip_dst,packet,len,reply_interface->name);
+            sr_handle_arpreq(sr,request);
+            return;
 
         }
     }
-
+    else
+    {
+        sr_handleicmperror(sr,packet,0x03,0x00,current_interface);
+    }
 }
 
