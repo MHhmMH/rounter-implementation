@@ -44,7 +44,7 @@ void sr_handle_arpreq(struct sr_instance* sr, struct sr_arpreq* request)
             uint8_t * reply_packet = malloc(packet_len);
             sr_ethernet_hdr_t* reply_ether = (sr_ethernet_hdr_t *) reply_packet;
             sr_arp_hdr_t* reply_arp = (sr_arp_hdr_t *)(reply_packet + sizeof(sr_ethernet_hdr_t));
-            // LPM
+            /* LPM */
             struct sr_if *reply_interface;
             struct sr_rt *current_router = sr->routing_table;
             while (current_router)
@@ -59,11 +59,11 @@ void sr_handle_arpreq(struct sr_instance* sr, struct sr_arpreq* request)
             }
             reply_ether->ether_type = ethertype_arp;
 
-            // boardcast the arp request
+            /* boardcast the arp request */
             memcpy(reply_ether->ether_shost,reply_interface->addr,ETHER_ADDR_LEN);
             memcpy(reply_ether->ether_dhost,(uint8_t *)BROADCAST_ADDRESS,ETHER_ADDR_LEN);
 
-            // create the arp header
+            /* create the arp header */
 
             reply_arp->ar_hrd = arp_hrd_ethernet;
             reply_arp->ar_pro = ethertype_ip;
@@ -186,24 +186,28 @@ struct sr_arpreq *sr_arpcache_insert(struct sr_arpcache *cache,
     pthread_mutex_lock(&(cache->lock));
     
     struct sr_arpreq *req, *prev = NULL, *next = NULL; 
-    for (req = cache->requests; req != NULL; req = req->next) {
-        if (req->ip == ip) {            
-            if (prev) {
+    for (req = cache->requests; req != NULL; req = req->next)
+    {
+        if (req->ip == ip)
+        {
+            if (prev)
+            {
                 next = req->next;
                 prev->next = next;
             } 
-            else {
+            else
+            {
                 next = req->next;
                 cache->requests = next;
             }
-            
             break;
         }
         prev = req;
     }
     
     int i;
-    for (i = 0; i < SR_ARPCACHE_SZ; i++) {
+    for (i = 0; i < SR_ARPCACHE_SZ; i++)
+    {
         if (!(cache->entries[i].valid))
             break;
     }
