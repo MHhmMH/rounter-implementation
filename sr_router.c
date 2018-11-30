@@ -95,7 +95,7 @@ void sr_handlearp(struct sr_instance* sr, uint8_t * packet, unsigned int len, ch
 {
     sr_ethernet_hdr_t* ether_hdr = (sr_ethernet_hdr_t *)packet;
     sr_arp_hdr_t* arp_hdr = (sr_arp_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
-    // find the receiver interface
+    /* find the receiver interface */
     struct sr_if * receiver = sr_get_interface(sr,interface);
     uint16_t ar_op = arp_hdr->ar_op;
     if (ar_op == arp_op_request)
@@ -108,22 +108,22 @@ void sr_handlearp(struct sr_instance* sr, uint8_t * packet, unsigned int len, ch
     }
 
 }
-// This function is used to handle arp request
+/* This function is used to handle arp request */
 void sr_handlearprequest(struct sr_instance* sr,sr_ethernet_hdr_t *source_ether,sr_arp_hdr_t * source_acp, struct sr_if * current_interface)
 {
-    // create a new packet its cotains arp header and ethernet header
+    /* create a new packet its cotains arp header and ethernet header */
     unsigned int packet_len = sizeof(sr_arp_hdr_t) + sizeof(sr_ethernet_hdr_t);
     uint8_t * reply_packet = malloc(packet_len);
     sr_ethernet_hdr_t* reply_ether = (sr_ethernet_hdr_t *) reply_packet;
     sr_arp_hdr_t* reply_arp = (sr_arp_hdr_t *)(reply_packet + sizeof(sr_ethernet_hdr_t));
     reply_ether->ether_type = source_ether->ether_type;
-    // the reply source address is the address of current interface
+    /* the reply source address is the address of current interface */
     memcpy(reply_ether->ether_shost,current_interface->addr,ETHER_ADDR_LEN);
-    // the reply destination address is the source address of request arp
+    /* the reply destination address is the source address of request arp*/
     memcpy(reply_ether->ether_dhost,source_ether->ether_shost,ETHER_ADDR_LEN);
-    // the reply arp sourc address is the source address of current interface
+    /* the reply arp sourc address is the source address of current interface */
     memcpy(reply_arp->ar_sha,current_interface->addr,ETHER_ADDR_LEN);
-    //  the reply destination address is the source address of request arp
+    /*  the reply destination address is the source address of request arp */
     memcpy(reply_arp->ar_tha,source_acp->ar_sha,ETHER_ADDR_LEN);
     reply_arp->ar_hln = source_acp->ar_hln;
     reply_arp->ar_hrd = source_acp->ar_hrd;
@@ -132,36 +132,36 @@ void sr_handlearprequest(struct sr_instance* sr,sr_ethernet_hdr_t *source_ether,
     reply_arp->ar_sip = current_interface->ip;
     reply_arp->ar_tip = source_acp->ar_sip;
     reply_arp->ar_op = arp_op_reply;
-    // send the arp reply back
+    /* send the arp reply back */
     sr_send_packet(sr,reply_packet,packet_len,current_interface->name);
 }
 void sr_handlearpreply(struct sr_instance* sr,sr_arp_hdr_t * source_acp, struct sr_if * current_interface)
 {
-    // the packet is for me
+    /* the packet is for me */
     if (source_acp->ar_tip == current_interface->ip)
     {
         struct sr_arpreq* request = sr_arpcache_insert(&sr->cache,source_acp->ar_sha,source_acp->ar_sip);
-        // if there is any packet wait for this request we send it
+        /* if there is any packet wait for this request we send it */
         if (request)
         {
             struct sr_packet * current_packet = request->packets;
-            // iterate all the packet and send them
+            /* iterate all the packet and send them */
             while (current_packet)
             {
             uint8_t *reply_packet= current_packet->buf;
             sr_ethernet_hdr_t* reply_ether = (sr_ethernet_hdr_t *) reply_packet;
             sr_ip_hdr_t* reply_ip = (sr_ip_hdr_t *)(reply_ether + sizeof(sr_ethernet_hdr_t));
-            // the reply source address is the address of current interface
+            /* the reply source address is the address of current interface */
             memcpy(reply_ether->ether_shost,current_interface->addr,ETHER_ADDR_LEN);
-            // the reply destination address is the source address of request arp
+            /* the reply destination address is the source address of request arp */
             memcpy(reply_ether->ether_dhost,source_acp->ar_sha,ETHER_ADDR_LEN);
-            // change the checksum for reply-ip
+            /* change the checksum for reply-ip */
             reply_ip->ip_sum = 0;
             reply_ip->ip_sum = cksum(reply_ip,sizeof(sr_ip_hdr_t));
             sr_send_packet(sr,reply_packet,current_packet->len,current_interface->name);
             current_packet = current_packet->next;
             }
-            // remove the request queue from this arp cache
+            /* remove the request queue from this arp cache */
             sr_arpreq_destroy(&sr->cache,request);
         }
     }
@@ -171,7 +171,7 @@ void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * in
     struct sr_if * receiver = sr_get_interface(sr,interface);
     sr_ethernet_hdr_t* ether_header = (sr_ethernet_hdr_t *) packet;
     sr_ip_hdr_t * ip_header = (sr_ip_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
-    // to check the length of the ip packet
+    /* to check the length of the ip packet */
     if (len < sizeof(ether_header) + sizeof(ip_header))
     {
         return;
@@ -185,20 +185,20 @@ void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * in
     }
     ip_header->ip_sum = check_sum;
     struct sr_if * current_interface = sr->if_list;
-    // traverse all the interface in the list
+    /* traverse all the interface in the list */
     while (current_interface)
     {
-        // the packet if for this interface
+        /* the packet if for this interface */
         if (current_interface->ip == ip_header->ip_dst)
         {
-            // the message is icmp message
+            /* the message is icmp message */
             if (ip_header->ip_p == ip_protocol_icmp)
             {
                 sr_icmp_t11_hdr_t * icmp_header = (sr_icmp_t11_hdr_t *)(packet + sizeof(sr_ip_hdr_t) + sizeof(sr_ethernet_hdr_t));
-                // the message is icmp request
+                /* the message is icmp request */
                 if (icmp_header->icmp_type == 0x08)
                 {
-                    // implement LPM
+                    /* implement LPM */
                     struct sr_if * reply_interface;
                     struct sr_rt * current_router = sr->routing_table;
                     while (current_router)
@@ -211,17 +211,17 @@ void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * in
                         }
                         current_router = current_router->next;
                     }
-                    // After the while loop we have found the longest prefix that matches
-                    // change ether header
+                    /* After the while loop we have found the longest prefix that matches */
+                    /* change ether header */
                     memcpy(ether_header->ether_shost,reply_interface->addr,ETHER_ADDR_LEN);
-                    // the reply destination address is the source address of request icmp
+                    /* the reply destination address is the source address of request icmp */
                     memcpy(ether_header->ether_dhost,ether_header->ether_shost,ETHER_ADDR_LEN);
 
-                    // change ip header
+                    /* change ip header */
                     ip_header->ip_src = receiver->ip;
                     ip_header->ip_dst = ip_header->ip_src;
 
-                    // change icmp header
+                    /* change icmp header */
                     icmp_header->icmp_type = 0x00;
                     icmp_header->icmp_code = 0x00;
                     icmp_header->icmp_sum = 0;
@@ -230,7 +230,7 @@ void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * in
                     sr_send_packet(sr,packet,len,reply_interface->name);
                 }
             }
-        // handle the case for tcp/ip
+        /* handle the case for tcp/ip */
         else
             {
                 sr_handleicmperror(sr,packet,0x03,0x03,receiver);
@@ -241,7 +241,7 @@ void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * in
     ip_header->ip_ttl -= 1;
     if(ip_header->ip_ttl == 0)
     {
-        // handle time out
+        /* handle time out */
         sr_handleicmperror(sr,packet,0x11,0x00,receiver);
     }
     sr_forward_ip(sr,packet,len,receiver);
@@ -250,15 +250,15 @@ void sr_handleicmperror(struct sr_instance *sr, uint8_t* source_packet, uint8_t 
 {
     unsigned packet_len = sizeof(sr_icmp_t11_hdr_t) + sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t);
     uint8_t * reply_packet = malloc(packet_len);
-    // create reply and source ethernet header
+    /* create reply and source ethernet header */
     sr_ethernet_hdr_t * source_ether = (sr_ethernet_hdr_t * ) source_packet;
     sr_ethernet_hdr_t * reply_ether = (sr_ethernet_hdr_t * )  reply_packet;
-    // create reply and source  ip header
+    /* create reply and source  ip header */
     sr_ip_hdr_t * source_ip  = (sr_ip_hdr_t * )(source_packet + sizeof(sr_ip_hdr_t));
     sr_ip_hdr_t * reply_ip  = (sr_ip_hdr_t * )(reply_packet + sizeof(sr_ip_hdr_t));
-    // create reply icmp header
+    /* create reply icmp header */
     sr_icmp_t11_hdr_t * reply_icmp = (sr_icmp_t11_hdr_t *)(reply_packet + sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t));
-    // LPM
+    /* LPM */
     struct sr_if * reply_interface;
     struct sr_rt * current_router = sr->routing_table;
     while (current_router)
@@ -273,13 +273,13 @@ void sr_handleicmperror(struct sr_instance *sr, uint8_t* source_packet, uint8_t 
     }
     reply_ether->ether_type = source_ether->ether_type;
 
-    // After the while loop we have found the longest prefix that matches
-    // change ether header
+    /* After the while loop we have found the longest prefix that matches */
+    /* change ether header*/
     memcpy(reply_ether->ether_shost,reply_interface->addr,ETHER_ADDR_LEN);
-    // the reply destination address is the source address of request icmp
+    /* the reply destination address is the source address of request icmp */
     memcpy(reply_ether->ether_dhost,source_ether->ether_shost,ETHER_ADDR_LEN);
 
-    // create and fill in the ip field
+    /* create and fill in the ip field */
     reply_ip->ip_tos = source_ip->ip_tos;
     reply_ip->ip_p = source_ip->ip_p;
     reply_ip->ip_id = source_ip->ip_id;
@@ -291,21 +291,21 @@ void sr_handleicmperror(struct sr_instance *sr, uint8_t* source_packet, uint8_t 
     reply_ip->ip_sum = cksum(reply_ip, sizeof(sr_ip_hdr_t));
     reply_ip->ip_len = packet_len - sizeof(sr_ethernet_hdr_t);
 
-    // create and fill the icmp field
+    /* create and fill the icmp field */
     reply_icmp->icmp_code = icmp_code;
     reply_icmp->icmp_type = icmp_type;
     memcpy(reply_icmp->data,source_ip,ICMP_DATA_SIZE);
     reply_icmp->icmp_sum = 0;
     reply_icmp->icmp_sum = cksum(reply_icmp, sizeof(sr_icmp_t11_hdr_t));
 
-    // send the packet
+    /* send the packet */
     sr_send_packet(sr,reply_packet,packet_len,reply_interface->name);
 }
 void sr_forward_ip(struct sr_instance* sr,uint8_t * packet, unsigned len,struct sr_if * current_interface)
 {
     sr_ethernet_hdr_t* ether_header = (sr_ethernet_hdr_t *) packet;
     sr_ip_hdr_t * ip_header = (sr_ip_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
-    // LPM
+    /* LPM */
     struct sr_if * reply_interface;
     struct sr_rt * current_router = sr->routing_table;
     int find_dist = 0;
@@ -334,7 +334,7 @@ void sr_forward_ip(struct sr_instance* sr,uint8_t * packet, unsigned len,struct 
             return;
 
         }
-        // put the packet under the queue
+        /* put the packet under the queue */
         else
         {
             struct sr_arpreq* request = sr_arpcache_queuereq(&sr->cache,ip_header->ip_dst,packet,len,reply_interface->name);
