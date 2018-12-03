@@ -33,6 +33,7 @@ void sr_handle_arpreq(struct sr_instance* sr, struct sr_arpreq* request)
             while(current_packet)
             {
                 struct sr_if * current_interface = sr_get_interface(sr,current_packet->iface);
+                /*Host unreachable*/
                 sr_handleicmperror(sr,current_packet->buf,0x03,0x01,current_interface);
                 current_packet = current_packet->next;
             }
@@ -45,21 +46,11 @@ void sr_handle_arpreq(struct sr_instance* sr, struct sr_arpreq* request)
             sr_ethernet_hdr_t* reply_ether = (sr_ethernet_hdr_t *) reply_packet;
             sr_arp_hdr_t* reply_arp = (sr_arp_hdr_t *)(reply_packet + sizeof(sr_ethernet_hdr_t));
             /* LPM */
-            struct sr_if *reply_interface;
-            struct sr_rt *current_router = sr->routing_table;
-            while (current_router)
-            {
-
-                uint32_t dist_ip = current_router->mask.s_addr & request->ip;
-                if (dist_ip == current_router->dest.s_addr)
-                {
-                    reply_interface = sr_get_interface(sr,current_router->interface);
-                }
-                current_router = current_router->next;
-            }
-            reply_ether->ether_type = ethertype_arp;
+            struct sr_rt * match_entry  = LongestPrefixMatch(sr,request->ip);
+            struct sr_if * reply_interface = sr_get_interface(sr,match_entry->interface);
 
             /* boardcast the arp request */
+            reply_ether->ether_type = ethertype_arp;
             memcpy(reply_ether->ether_shost,reply_interface->addr,ETHER_ADDR_LEN);
             memcpy(reply_ether->ether_dhost,(uint8_t *)BROADCAST_ADDRESS,ETHER_ADDR_LEN);
 
@@ -75,10 +66,9 @@ void sr_handle_arpreq(struct sr_instance* sr, struct sr_arpreq* request)
 
             memcpy(reply_arp->ar_sha,reply_interface->addr,ETHER_ADDR_LEN);
             memcpy(reply_arp->ar_tha,(unsigned char*)BROADCAST_ADDRESS,ETHER_ADDR_LEN);
-
             sr_send_packet(sr,reply_packet,packet_len,reply_interface->name);
 
-            request->times_sent +=1;
+            request->times_sent += 1;
             request->sent = time(NULL);
         }
     }

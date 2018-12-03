@@ -68,12 +68,12 @@ int sr_read_from_server(struct sr_instance* );
 void sr_init(struct sr_instance* );
 void sr_handlepacket(struct sr_instance* , uint8_t * , unsigned int , char* );
 void sr_handlearp(struct sr_instance* sr, uint8_t * packet, unsigned int len, char* interface);
-void sr_handlearp(struct sr_instance* sr, uint8_t * packet, unsigned int len, char* interface);
 void sr_handlearprequest(struct sr_instance* sr,sr_ethernet_hdr_t *source_ether,sr_arp_hdr_t * source_acp, struct sr_if * current_interface);
 void sr_handlearpreply(struct sr_instance* sr,sr_arp_hdr_t * source_acp, struct sr_if * current_interface);
 void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * interface);
 void sr_handleicmperror(struct sr_instance *sr, uint8_t* source_packet, uint8_t icmp_type, uint8_t icmp_code, struct sr_if* current_interface);
 void sr_forward_ip(struct sr_instance* sr,uint8_t * packet, unsigned len,struct sr_if * current_interface);
+struct sr_rt * LongestPrefixMatch(struct sr_instance * sr, uint32_t ip);
 /* -- sr_if.c -- */
 void sr_add_interface(struct sr_instance* , const char* );
 void sr_set_ether_ip(struct sr_instance* , uint32_t );

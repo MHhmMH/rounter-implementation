@@ -88,6 +88,19 @@ struct sr_icmp_t11_hdr {
 } __attribute__ ((packed)) ;
 typedef struct sr_icmp_t11_hdr sr_icmp_t11_hdr_t;
 
+struct sr_icmp_t0_hdr
+{
+    uint8_t icmp_type;
+    uint8_t icmp_code;
+    uint16_t icmp_sum;
+    uint16_t identifier;
+    uint16_t seqnumber;
+    uint8_t data[ICMP_DATA_SIZE];
+
+} __attribute__ ((packed)) ;
+typedef struct sr_icmp_t0_hdr sr_icmp_t0_hdr_t;
+
+
 /*
  * Structure of an internet header, naked of options.
  */
