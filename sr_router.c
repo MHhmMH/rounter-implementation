@@ -256,6 +256,7 @@ void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * in
         else
             {
                 sr_handleicmperror(sr,packet,0x03,0x03,receiver);
+                return;
             }
         }
         current_interface = current_interface->next;
@@ -265,6 +266,7 @@ void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * in
     {
         /* handle time out */
         sr_handleicmperror(sr,packet,0x11,0x00,receiver);
+        return;
     }
     sr_forward_ip(sr,packet,len,receiver);
 }
@@ -322,6 +324,8 @@ void sr_forward_ip(struct sr_instance* sr,uint8_t * packet, unsigned len,struct 
     sr_ethernet_hdr_t* ether_header = (sr_ethernet_hdr_t *) packet;
     sr_ip_hdr_t * ip_header = (sr_ip_hdr_t *)(packet + sizeof(sr_ethernet_hdr_t));
     /* LPM */
+    ip_header->ip_sum = 0;
+    ip_header->ip_sum = cksum(ip_header, sizeof(sr_ip_hdr_t));
     struct sr_rt * match_entry  = LongestPrefixMatch(sr,ip_header->ip_src);
     if (match_entry)
     {
@@ -331,8 +335,7 @@ void sr_forward_ip(struct sr_instance* sr,uint8_t * packet, unsigned len,struct 
         {
             memcpy(ether_header->ether_shost,reply_interface->addr,ETHER_ADDR_LEN);
             memcpy(ether_header->ether_dhost,entry->mac,ETHER_ADDR_LEN);
-            ip_header->ip_sum = 0;
-            ip_header->ip_sum = cksum(ip_header, sizeof(sr_ip_hdr_t));
+
             sr_send_packet(sr,packet,len,reply_interface->name);
             free(entry);
             return;
