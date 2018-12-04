@@ -305,7 +305,7 @@ void sr_handleicmperror(struct sr_instance *sr, uint8_t* source_packet, uint8_t 
     reply_ip->ip_id = source_ip->ip_id;
     reply_ip->ip_off = source_ip->ip_off;
     reply_ip->ip_ttl = INIT_TTL;
-    reply_ip->ip_src = current_interface->ip;
+    reply_ip->ip_src = reply_interface->ip;
     reply_ip->ip_dst = source_ip->ip_src;
 
     reply_ip->ip_len = htons(packet_len - sizeof(sr_ethernet_hdr_t));
