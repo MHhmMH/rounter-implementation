@@ -227,8 +227,8 @@ void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * in
                     memcpy(reply_ether->ether_dhost,ether_header->ether_shost,ETHER_ADDR_LEN);
 
                     /* create and fill in the ip header field */
-                    reply_ip->ip_hl = sizeof(sr_ip_hdr_t);
-                    reply_ip->ip_v = 4;
+                    reply_ip->ip_hl = ip_header->ip_hl;
+                    reply_ip->ip_v = ip_header->ip_v;
                     reply_ip->ip_tos = ip_header->ip_tos;
                     reply_ip->ip_p = ip_header->ip_p;
                     reply_ip->ip_id = ip_header->ip_id;
@@ -236,9 +236,9 @@ void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * in
                     reply_ip->ip_ttl = INIT_TTL;
                     reply_ip->ip_src = reply_interface->ip;
                     reply_ip->ip_dst = ip_header->ip_src;
+                    reply_ip->ip_len = htons(packet_len - sizeof(sr_ethernet_hdr_t));
                     reply_ip->ip_sum = 0;
                     reply_ip->ip_sum = cksum(reply_ip, sizeof(sr_ip_hdr_t));
-                    reply_ip->ip_len = htons(packet_len - sizeof(sr_ethernet_hdr_t));
 
                     /* create rely icmp header */
                     reply_icmp->icmp_type = 0x00;
