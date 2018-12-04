@@ -141,7 +141,6 @@ void sr_handlearpreply(struct sr_instance* sr,sr_arp_hdr_t * source_acp, struct 
     /* the packet is for me */
     if (source_acp->ar_tip == current_interface->ip)
     {
-        pthread_mutex_lock(&sr->cache.lock);
         struct sr_arpreq* request = sr_arpcache_insert(&sr->cache,source_acp->ar_sha,source_acp->ar_sip);
         /* if there is any packet wait for this request we send it */
 
@@ -173,7 +172,6 @@ void sr_handlearpreply(struct sr_instance* sr,sr_arp_hdr_t * source_acp, struct 
             /* remove the request queue from this arp cache */
             sr_arpreq_destroy(&sr->cache,request);
         }
-        pthread_mutex_unlock(&sr->cache.lock);
     }
 }
 void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * interface)
@@ -350,10 +348,8 @@ void sr_forward_ip(struct sr_instance* sr,uint8_t * packet, unsigned len,struct 
         /* put the packet under the queue */
         else
         {
-            pthread_mutex_lock(&sr->cache.lock);
             struct sr_arpreq* request = sr_arpcache_queuereq(&sr->cache,ip_header->ip_dst,packet,len,reply_interface->name);
             sr_handle_arpreq(sr,request);
-            pthread_mutex_unlock(&sr->cache.lock);
             return;
         }
     }

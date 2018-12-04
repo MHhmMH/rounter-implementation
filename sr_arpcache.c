@@ -24,7 +24,6 @@
 void sr_handle_arpreq(struct sr_instance* sr, struct sr_arpreq* request)
 {
     time_t currenttime = time(NULL);
-    pthread_mutex_lock(&sr->cache.lock);
     if (difftime(currenttime,request->sent) > 1.0)
     {
         if (request->times_sent >= 5)
@@ -72,7 +71,6 @@ void sr_handle_arpreq(struct sr_instance* sr, struct sr_arpreq* request)
             request->sent = time(NULL);
         }
     }
-    pthread_mutex_unlock(&sr->cache.lock);
 }
 
 void sr_arpcache_sweepreqs(struct sr_instance *sr)
