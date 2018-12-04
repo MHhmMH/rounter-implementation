@@ -50,17 +50,17 @@ void sr_handle_arpreq(struct sr_instance* sr, struct sr_arpreq* request)
             struct sr_if * reply_interface = sr_get_interface(sr,match_entry->interface);
 
             /* boardcast the arp request */
-            reply_ether->ether_type = ethertype_arp;
+            reply_ether->ether_type = htons(ethertype_arp);
             memcpy(reply_ether->ether_shost,reply_interface->addr,ETHER_ADDR_LEN);
             memcpy(reply_ether->ether_dhost,(uint8_t *)BROADCAST_ADDRESS,ETHER_ADDR_LEN);
 
             /* create the arp header */
 
-            reply_arp->ar_hrd = arp_hrd_ethernet;
-            reply_arp->ar_pro = ethertype_ip;
+            reply_arp->ar_hrd = htons(arp_hrd_ethernet);
+            reply_arp->ar_pro = htons(ethertype_arp);
             reply_arp->ar_hln = ETHER_ADDR_LEN;
             reply_arp->ar_pln = 4;
-            reply_arp->ar_op = arp_op_request;
+            reply_arp->ar_op = htons(arp_op_request);
             reply_arp->ar_sip = reply_interface->ip;
             reply_arp->ar_tip = request->ip;
 
