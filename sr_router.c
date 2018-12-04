@@ -332,7 +332,7 @@ void sr_forward_ip(struct sr_instance* sr,uint8_t * packet, unsigned len,struct 
     /* LPM */
     ip_header->ip_sum = 0;
     ip_header->ip_sum = cksum(ip_header, sizeof(sr_ip_hdr_t));
-    struct sr_rt * match_entry  = LongestPrefixMatch(sr,ip_header->ip_src);
+    struct sr_rt * match_entry  = LongestPrefixMatch(sr,ip_header->ip_dst);
     if (match_entry)
     {
         struct sr_arpentry* entry = sr_arpcache_lookup(&sr->cache,ip_header->ip_dst);
