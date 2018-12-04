@@ -301,7 +301,7 @@ void sr_handleicmperror(struct sr_instance *sr, uint8_t* source_packet, uint8_t 
     reply_ip->ip_hl = source_ip->ip_hl;
     reply_ip->ip_v = source_ip->ip_v;
     reply_ip->ip_tos = source_ip->ip_tos;
-    reply_ip->ip_p = source_ip->ip_p;
+    reply_ip->ip_p = ip_protocol_icmp;
     reply_ip->ip_id = source_ip->ip_id;
     reply_ip->ip_off = source_ip->ip_off;
     reply_ip->ip_ttl = INIT_TTL;
