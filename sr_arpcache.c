@@ -57,7 +57,7 @@ void sr_handle_arpreq(struct sr_instance* sr, struct sr_arpreq* request)
             /* create the arp header */
 
             reply_arp->ar_hrd = htons(arp_hrd_ethernet);
-            reply_arp->ar_pro = htons(ethertype_arp);
+            reply_arp->ar_pro = htons(ethertype_ip);
             reply_arp->ar_hln = ETHER_ADDR_LEN;
             reply_arp->ar_pln = 4;
             reply_arp->ar_op = htons(arp_op_request);
