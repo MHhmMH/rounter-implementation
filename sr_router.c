@@ -266,7 +266,7 @@ void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * in
     if(ip_header->ip_ttl == 0)
     {
         /* handle time out */
-        sr_handleicmperror(sr,packet,0x11,0x00,receiver);
+        sr_handleicmperror(sr,packet,11,0x00,receiver);
         return;
     }
     sr_forward_ip(sr,packet,len,receiver);
