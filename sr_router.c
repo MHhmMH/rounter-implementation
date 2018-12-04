@@ -279,8 +279,8 @@ void sr_handleicmperror(struct sr_instance *sr, uint8_t* source_packet, uint8_t 
     sr_ethernet_hdr_t * source_ether = (sr_ethernet_hdr_t * ) source_packet;
     sr_ethernet_hdr_t * reply_ether = (sr_ethernet_hdr_t * )  reply_packet;
     /* create reply and source  ip header */
-    sr_ip_hdr_t * source_ip  = (sr_ip_hdr_t * )(source_packet + sizeof(sr_ip_hdr_t));
-    sr_ip_hdr_t * reply_ip  = (sr_ip_hdr_t * )(reply_packet + sizeof(sr_ip_hdr_t));
+    sr_ip_hdr_t * source_ip  = (sr_ip_hdr_t * )(source_packet + sizeof(sr_ethernet_hdr_t));
+    sr_ip_hdr_t * reply_ip  = (sr_ip_hdr_t * )(reply_packet + sizeof(sr_ethernet_hdr_t));
     /* create reply icmp header */
     sr_icmp_t11_hdr_t * reply_icmp = (sr_icmp_t11_hdr_t *)(reply_packet + sizeof(sr_ethernet_hdr_t) + sizeof(sr_ip_hdr_t));
     /* LPM */
