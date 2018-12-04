@@ -355,7 +355,7 @@ void sr_forward_ip(struct sr_instance* sr,uint8_t * packet, unsigned len,struct 
     }
     else
     {
-        sr_handleicmperror(sr,packet,0x03,0x01,current_interface);
+        sr_handleicmperror(sr,packet,0x03,0x00,current_interface);
     }
 }
 struct sr_rt * LongestPrefixMatch(struct sr_instance * sr, uint32_t ip)
