@@ -297,6 +297,8 @@ void sr_handleicmperror(struct sr_instance *sr, uint8_t* source_packet, uint8_t 
     memcpy(reply_ether->ether_dhost,source_ether->ether_shost,ETHER_ADDR_LEN);
 
     /* create and fill in the ip field */
+    reply_ip->ip_hl = source_ip->ip_hl;
+    reply_ip->ip_v = source_ip->ip_v;
     reply_ip->ip_tos = source_ip->ip_tos;
     reply_ip->ip_p = source_ip->ip_p;
     reply_ip->ip_id = source_ip->ip_id;
@@ -304,9 +306,10 @@ void sr_handleicmperror(struct sr_instance *sr, uint8_t* source_packet, uint8_t 
     reply_ip->ip_ttl = INIT_TTL;
     reply_ip->ip_src = current_interface->ip;
     reply_ip->ip_dst = source_ip->ip_src;
+
+    reply_ip->ip_len = htons(packet_len - sizeof(sr_ethernet_hdr_t));
     reply_ip->ip_sum = 0;
     reply_ip->ip_sum = cksum(reply_ip, sizeof(sr_ip_hdr_t));
-    reply_ip->ip_len = packet_len - sizeof(sr_ethernet_hdr_t);
 
     /* create and fill the icmp field */
     reply_icmp->icmp_code = icmp_code;
