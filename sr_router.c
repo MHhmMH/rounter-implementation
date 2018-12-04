@@ -13,13 +13,14 @@
 
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 #include "sr_if.h"
 #include "sr_rt.h"
 #include "sr_router.h"
 #include "sr_protocol.h"
 #include "sr_arpcache.h"
 #include "sr_utils.h"
-
+#include <stdlib.h>
 /*---------------------------------------------------------------------
  * Method: sr_init(void)
  * Scope:  Global
