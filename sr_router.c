@@ -371,7 +371,7 @@ struct sr_rt * LongestPrefixMatch(struct sr_instance * sr, uint32_t ip)
     {
         uint32_t dist_ip = current_router->mask.s_addr & ip;
         uint32_t match_ip = current_router->mask.s_addr & current_router->dest.s_addr;
-        if (dist_ip == match_ip && current_router->mask.s_addr > largest_mask_now)
+        if ((dist_ip == match_ip) && (current_router->mask.s_addr > largest_mask_now))
         {
             match_entry = current_router;
             largest_mask_now = current_router->mask.s_addr;
