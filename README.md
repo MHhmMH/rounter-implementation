@@ -1,5 +1,7 @@
-CSE123 project 2 ls
+CSE123 project 2 
+
 Name: Minghao Han
+
 pid: A53246183
 
  Not compete for the George Varghese Espresso prize
