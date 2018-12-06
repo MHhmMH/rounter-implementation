@@ -29,7 +29,6 @@ void sr_handle_arpreq(struct sr_instance* sr, struct sr_arpreq* request)
         if (request->times_sent >= 5)
         {
             struct sr_packet * current_packet = request->packets;
-            reverse(&current_packet);
             while(current_packet)
             {
                 struct sr_if * current_interface = sr_get_interface(sr,current_packet->iface);
