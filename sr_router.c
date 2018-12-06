@@ -151,6 +151,9 @@ void sr_handlearpreply(struct sr_instance* sr,sr_arp_hdr_t * source_acp, struct 
         {
             struct sr_packet * current_packet = request->packets;
             /* iterate all the packet and send them */
+            /* first reverse the packet list because we need to send fifo*/
+            reverse(&current_packet);
+
             while (current_packet)
             {
             uint8_t *reply_packet= current_packet->buf;
@@ -381,3 +384,19 @@ struct sr_rt * LongestPrefixMatch(struct sr_instance * sr, uint32_t ip)
     return match_entry;
 }
 
+void reverse(struct sr_packet ** header_packet)
+{
+    struct sr_packet * prev  = NULL;
+    struct sr_packet * current = *header_packet;
+    struct sr_packet * next = NULL;
+    while (current !=  NULL)
+    {
+        // Store next
+        next  = current->next;
+        current->next = prev;
+        // Reverse current node's pointe// Move pointers one position ahead.
+        prev = current;
+        current = next;
+    }
+    * header_packet = prev;
+}

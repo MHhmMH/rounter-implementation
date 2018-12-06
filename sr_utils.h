@@ -44,5 +44,5 @@ void print_hdr_arp(uint8_t *buf);
 
 /* prints all headers, starting from eth */
 void print_hdrs(uint8_t *buf, uint32_t length);
-
+/*helper function to reverse a link list */
 #endif /* -- SR_UTILS_H -- */
