@@ -383,7 +383,7 @@ struct sr_rt * LongestPrefixMatch(struct sr_instance * sr, uint32_t ip)
     }
     return match_entry;
 }
-
+/* This function is used as a untiliity function to reverse a linklist*/
 void reverse(struct sr_packet ** header_packet)
 {
     struct sr_packet * prev  = NULL;
