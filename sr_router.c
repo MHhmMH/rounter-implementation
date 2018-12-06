@@ -391,10 +391,8 @@ void reverse(struct sr_packet ** header_packet)
     struct sr_packet * next = NULL;
     while (current !=  NULL)
     {
-        // Store next
         next  = current->next;
         current->next = prev;
-        // Reverse current node's pointe// Move pointers one position ahead.
         prev = current;
         current = next;
     }
