@@ -66,7 +66,6 @@ void sr_handle_arpreq(struct sr_instance* sr, struct sr_arpreq* request)
             memcpy(reply_arp->ar_sha,reply_interface->addr,ETHER_ADDR_LEN);
             memcpy(reply_arp->ar_tha,(unsigned char*)BROADCAST_ADDRESS,ETHER_ADDR_LEN);
             sr_send_packet(sr,reply_packet,packet_len,reply_interface->name);
-            free(reply_packet);
             request->times_sent += 1;
             request->sent = time(NULL);
         }

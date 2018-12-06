@@ -151,7 +151,6 @@ void sr_handlearpreply(struct sr_instance* sr,sr_arp_hdr_t * source_acp, struct 
             /* iterate all the packet and send them */
             /* first reverse the packet list because we need to send fifo*/
             reverse(&current_packet);
-
             while (current_packet)
             {
             uint8_t *reply_packet= current_packet->buf;
