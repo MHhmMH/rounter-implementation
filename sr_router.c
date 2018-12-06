@@ -136,8 +136,6 @@ void sr_handlearprequest(struct sr_instance* sr,sr_ethernet_hdr_t *source_ether,
     /* send the arp reply back */
     sr_send_packet(sr,reply_packet,packet_len,current_interface->name);
 
-    /* free the memomory*/
-    free(reply_packet);
 }
 void sr_handlearpreply(struct sr_instance* sr,sr_arp_hdr_t * source_acp, struct sr_if * current_interface)
 {
@@ -254,7 +252,6 @@ void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * in
                     reply_icmp->icmp_sum = cksum(reply_icmp, sizeof(sr_icmp_t0_hdr_t));
                     memcpy(reply_icmp->data,icmp_header->data,ICMP_DATA_SIZE);
                     sr_send_packet(sr,reply_packet,packet_len,reply_interface->name);
-                    free(reply_packet);
                     return;
                 }
             }
@@ -327,7 +324,6 @@ void sr_handleicmperror(struct sr_instance *sr, uint8_t* source_packet, uint8_t 
 
     /* send the packet */
     sr_send_packet(sr,reply_packet,packet_len,reply_interface->name);
-    free(reply_packet);
 }
 void sr_forward_ip(struct sr_instance* sr,uint8_t * packet, unsigned len,struct sr_if * current_interface)
 {
