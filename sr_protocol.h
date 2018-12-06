@@ -96,7 +96,6 @@ struct sr_icmp_t0_hdr
     uint16_t identifier;
     uint16_t seqnumber;
     uint8_t data[ICMP_DATA_SIZE];
-
 } __attribute__ ((packed)) ;
 typedef struct sr_icmp_t0_hdr sr_icmp_t0_hdr_t;
 

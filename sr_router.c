@@ -135,6 +135,9 @@ void sr_handlearprequest(struct sr_instance* sr,sr_ethernet_hdr_t *source_ether,
     reply_arp->ar_op = htons(arp_op_reply);
     /* send the arp reply back */
     sr_send_packet(sr,reply_packet,packet_len,current_interface->name);
+
+    /* free the memomory*/
+    free(reply_packet);
 }
 void sr_handlearpreply(struct sr_instance* sr,sr_arp_hdr_t * source_acp, struct sr_if * current_interface)
 {
@@ -158,15 +161,13 @@ void sr_handlearpreply(struct sr_instance* sr,sr_arp_hdr_t * source_acp, struct 
             /* the reply destination address is the source address of request arp */
             memcpy(reply_ether->ether_dhost,source_acp->ar_sha,ETHER_ADDR_LEN);
 
-
-
             /* change the checksum for reply-ip */
             reply_ip->ip_sum = 0;
             reply_ip->ip_sum = cksum(reply_ip,sizeof(sr_ip_hdr_t));
 
-
-
             sr_send_packet(sr,reply_packet,current_packet->len,current_interface->name);
+            /* add free reply */
+            free(reply_packet);
             current_packet = current_packet->next;
             }
             /* remove the request queue from this arp cache */
@@ -186,6 +187,7 @@ void sr_handleip(struct sr_instance* sr,uint8_t * packet, unsigned len,char * in
     sr_ethernet_hdr_t* reply_ether = (sr_ethernet_hdr_t *) reply_packet;
     sr_ip_hdr_t* reply_ip = (sr_ip_hdr_t *)(reply_packet + sizeof(sr_ethernet_hdr_t));
     sr_icmp_t0_hdr_t * reply_icmp = (sr_icmp_t0_hdr_t *)(reply_packet + sizeof(sr_ip_hdr_t) + sizeof(sr_ethernet_hdr_t));
+
 
     /* to check the length of the ip packet */
     if (len < sizeof(ether_header) + sizeof(ip_header))
@@ -308,7 +310,7 @@ void sr_handleicmperror(struct sr_instance *sr, uint8_t* source_packet, uint8_t 
     reply_ip->ip_src = reply_interface->ip;
     reply_ip->ip_dst = source_ip->ip_src;
 
-    reply_ip->ip_len = htons(packet_len - sizeof(sr_ethernet_hdr_t));
+    reply_ip->ip_len = htons((packet_len - sizeof(sr_ethernet_hdr_t)));
     reply_ip->ip_sum = 0;
     reply_ip->ip_sum = cksum(reply_ip, sizeof(sr_ip_hdr_t));
 
@@ -356,6 +358,7 @@ void sr_forward_ip(struct sr_instance* sr,uint8_t * packet, unsigned len,struct 
     else
     {
         sr_handleicmperror(sr,packet,0x03,0x00,current_interface);
+        Debug("haha");
     }
 }
 struct sr_rt * LongestPrefixMatch(struct sr_instance * sr, uint32_t ip)
