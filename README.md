@@ -1,6 +1,9 @@
 CSE123 project 2 
 
-Name: Minghao Han
+Authored by  Minghao Han
+
+
+
 This is simple implementation of router in C and VMware fusion including ARP,IP,ICMP proctocal
 
  In sr_router.c
