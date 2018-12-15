@@ -1,13 +1,8 @@
 CSE123 project 2 
 
 Name: Minghao Han
+This is simple implementation of router in C and VMware fusion including ARP,IP,ICMP proctocal
 
-pid: A53246183
-
- Not compete for the George Varghese Espresso prize
- 
- I change some impmentation in sr_router.c and sr_arpcache.c 
- 
  In sr_router.c
  
  The function handle packet is served as a main function to handle a packet 
