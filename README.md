@@ -4,7 +4,7 @@ Authored by  Minghao Han
 
 
 
-This is simple implementation of router in C and VMware fusion including ARP,IP,ICMP proctocal
+This is simple implementation of router in C and VMware fusion including ARP,IP,ICMP proctocol
 
  In sr_router.c
  
